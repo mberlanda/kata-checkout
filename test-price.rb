@@ -2,32 +2,32 @@ require 'test-unit'
 
 class ItemPrice
 
-  def initialize(price_sgl, bool_offer=false, no_offer=1, price_offer=price_sgl)
-    @price_sgl = price_sgl
-    @has_offer = bool_offer
-    @no_offer = no_offer
+  def initialize(price_unit: , active_offer: false, min_item: 1, price_offer: price_unit)
+    @price_unit = price_unit
+    @has_offer = active_offer
+    @min_item = min_item
     @price_offer = price_offer
   end
 
-  attr_reader :price_sgl, :has_offer, :no_offer, :price_offer
+  attr_accessor :price_unit, :has_offer, :min_item, :price_offer
 
 end  
 
 RULES = {
-  "" => ItemPrice.new(0, false),
-  "A" => ItemPrice.new(50, true, 3, 130),
-  "B" => ItemPrice.new(30, true, 2, 45),
-  "C" => ItemPrice.new(20, false),
-  "D" => ItemPrice.new(15, false)
+  "" => ItemPrice.new(price_unit: 0, active_offer: false),
+  "A" => ItemPrice.new(price_unit: 50, active_offer: true, min_item: 3, price_offer: 130),
+  "B" => ItemPrice.new(price_unit: 30, active_offer: true, min_item: 2, price_offer: 45),
+  "C" => ItemPrice.new(price_unit: 20, active_offer: false),
+  "D" => ItemPrice.new(price_unit: 15, active_offer: false)
 }
 
 class ItemListException < StandardError; end
 
 class CheckOut
 
-  def initialize(rules)
-    @item_list = rules
-    @item_shopped = {}
+  def initialize(price_list)
+    @items_list = price_list
+    @items_shopped = {}
   end
 
   def scan(item)
@@ -37,33 +37,40 @@ class CheckOut
       puts "#{item} is not available"
     end  
 
-    raise ItemListException unless @item_list.keys.include? item
+    raise ItemListException unless @items_list.keys.include? item
     
-    if @item_shopped[item]
-      @item_shopped[item] += 1
+    if @items_shopped.keys.include? item
+      @items_shopped[item] += 1
     else
-      @item_shopped[item] = 1
+      @items_shopped[item] = 1
     end
 
   end
 
   def total
-    tot = 0
+    subtotal = 0
 
-    @item_shopped.keys.each do |i|
-      art = @item_list[i]
-      if art.has_offer
-        tot += art.price_offer * (@item_shopped[i]/art.no_offer)
-        tot += art.price_sgl * (@item_shopped[i]%art.no_offer)
+    @items_shopped.keys.each do |i|
+      
+      good, units = @items_list[i], @items_shopped[i]
+      
+      if good.has_offer
+        units_offer = units / good.min_item
+        units_excl_offer = units % good.min_item
+        
+        subtotal += good.price_offer * units_offer
+        subtotal += good.price_unit * units_excl_offer
+
       else
-        tot += art.price_sgl * @item_shopped[i]
+        subtotal += good.price_unit * units
+        
       end
+
     end
 
-    tot
+    subtotal
 
   end
-
 end
 
 
@@ -105,4 +112,3 @@ class TestPrice < Test::Unit::TestCase
   end
 
 end
-
