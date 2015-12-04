@@ -9,6 +9,18 @@ class ItemPrice
     @price_offer = price_offer
   end
 
+  def price_per_quantity(units)
+    
+    if @has_offer
+      units_offer = units / @min_item
+      units_excl_offer = units % @min_item
+      @price_offer * units_offer + @price_unit * units_excl_offer
+    else
+      @price_unit * units
+    end
+
+  end
+
   attr_accessor :price_unit, :has_offer, :min_item, :price_offer
 
 end  
@@ -53,18 +65,7 @@ class CheckOut
     @items_shopped.keys.each do |i|
       
       good, units = @items_list[i], @items_shopped[i]
-      
-      if good.has_offer
-        units_offer = units / good.min_item
-        units_excl_offer = units % good.min_item
-        
-        subtotal += good.price_offer * units_offer
-        subtotal += good.price_unit * units_excl_offer
-
-      else
-        subtotal += good.price_unit * units
-        
-      end
+      subtotal += good.price_per_quantity(units)
 
     end
 
