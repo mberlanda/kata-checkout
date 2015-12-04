@@ -1,43 +1,71 @@
 require 'test-unit'
 
+class ItemPrice
+
+  def initialize(price_sgl, bool_offer=false, no_offer=1, price_offer=price_sgl)
+    @price_sgl = price_sgl
+    @has_offer = bool_offer
+    @no_offer = no_offer
+    @price_offer = price_offer
+  end
+
+  attr_reader :price_sgl, :has_offer, :no_offer, :price_offer
+
+end  
+
+RULES = {
+  "" => ItemPrice.new(0, false),
+  "A" => ItemPrice.new(50, true, 3, 130),
+  "B" => ItemPrice.new(30, true, 2, 45),
+  "C" => ItemPrice.new(20, false),
+  "D" => ItemPrice.new(15, false)
+}
+
+class ItemListException < StandardError; end
+
 class CheckOut
 
   def initialize(rules)
-    @item_hash = {}
+    @item_list = rules
+    @item_shopped = {}
   end
 
   def scan(item)
-    if @item_hash[item]
-      @item_hash[item] += 1
+
+    begin
+    rescue ItemListException
+      puts "#{item} is not available"
+    end  
+
+    raise ItemListException unless @item_list.keys.include? item
+    
+    if @item_shopped[item]
+      @item_shopped[item] += 1
     else
-      @item_hash[item] = 1
+      @item_shopped[item] = 1
     end
 
   end
 
   def total
     tot = 0
-    if @item_hash["A"]
-      tot += 130 * (@item_hash["A"]/3) # Offer take 3
-      tot += 50 * (@item_hash["A"]%3)
+
+    @item_shopped.keys.each do |i|
+      art = @item_list[i]
+      if art.has_offer
+        tot += art.price_offer * (@item_shopped[i]/art.no_offer)
+        tot += art.price_sgl * (@item_shopped[i]%art.no_offer)
+      else
+        tot += art.price_sgl * @item_shopped[i]
+      end
     end
-    if @item_hash["B"]
-      tot += 45 * (@item_hash["B"]/2)  # Offer take 2
-      tot += 30 * (@item_hash["B"]%2)
-    end
-    if @item_hash["C"]
-      tot += 20 * @item_hash["C"]
-    end
-    if @item_hash["D"]
-      tot += 15 * @item_hash["D"]
-    end
+
     tot
 
   end
 
 end
 
-RULES = {}
 
 class TestPrice < Test::Unit::TestCase
 
