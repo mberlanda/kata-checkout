@@ -3,7 +3,6 @@ require 'test-unit'
 class CheckOut
 
   def initialize(rules)
-    @tot = 0
     @item_hash = {}
   end
 
@@ -17,21 +16,22 @@ class CheckOut
   end
 
   def total
+    tot = 0
     if @item_hash["A"]
-      @tot += 130 * (@item_hash["A"]/3)
-      @tot += 50 * (@item_hash["A"]%3)
+      tot += 130 * (@item_hash["A"]/3) # Offer take 3
+      tot += 50 * (@item_hash["A"]%3)
     end
     if @item_hash["B"]
-      @tot += 45 * (@item_hash["B"]/2)
-      @tot += 30 * (@item_hash["B"]%2)
+      tot += 45 * (@item_hash["B"]/2)  # Offer take 2
+      tot += 30 * (@item_hash["B"]%2)
     end
     if @item_hash["C"]
-      @tot += 20 * @item_hash["C"]
+      tot += 20 * @item_hash["C"]
     end
     if @item_hash["D"]
-      @tot += 15 * @item_hash["D"]
+      tot += 15 * @item_hash["D"]
     end
-    @tot
+    tot
 
   end
 
@@ -64,6 +64,16 @@ class TestPrice < Test::Unit::TestCase
     assert_equal(190, price("AAABBD"))
     assert_equal(190, price("DABABA"))
 
+  end
+
+  def test_incremental
+    co = CheckOut.new(RULES)
+    assert_equal(  0, co.total)
+    co.scan("A");  assert_equal( 50, co.total)
+    co.scan("B");  assert_equal( 80, co.total)
+    co.scan("A");  assert_equal(130, co.total)
+    co.scan("A");  assert_equal(160, co.total)
+    co.scan("B");  assert_equal(175, co.total)
   end
 
 end
