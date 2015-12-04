@@ -21,8 +21,6 @@ class ItemPrice
 
   end
 
-  attr_accessor :price_unit, :has_offer, :min_item, :price_offer
-
 end  
 
 RULES = {
