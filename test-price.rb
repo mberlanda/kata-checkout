@@ -2,36 +2,29 @@ require 'test-unit'
 
 class ItemPrice
 
-  def initialize(price_unit: , active_offer: false, min_item: 1, price_offer: price_unit)
+  def initialize(price_unit: , min_item: 1, price_offer: price_unit)
     @price_unit = price_unit
-    @has_offer = active_offer
     @min_item = min_item
     @price_offer = price_offer
   end
 
   def price_per_quantity(units)
     
-    if @has_offer
-      units_offer = units / @min_item
-      units_excl_offer = units % @min_item
-      @price_offer * units_offer + @price_unit * units_excl_offer
-    else
-      @price_unit * units
-    end
+    units_offer = units / @min_item
+    units_excl_offer = units % @min_item
+    @price_offer * units_offer + @price_unit * units_excl_offer
 
   end
 
 end  
 
 RULES = {
-  "" => ItemPrice.new(price_unit: 0, active_offer: false),
-  "A" => ItemPrice.new(price_unit: 50, active_offer: true, min_item: 3, price_offer: 130),
-  "B" => ItemPrice.new(price_unit: 30, active_offer: true, min_item: 2, price_offer: 45),
-  "C" => ItemPrice.new(price_unit: 20, active_offer: false),
-  "D" => ItemPrice.new(price_unit: 15, active_offer: false)
+  "" => ItemPrice.new(price_unit: 0),
+  "A" => ItemPrice.new(price_unit: 50, min_item: 3, price_offer: 130),
+  "B" => ItemPrice.new(price_unit: 30, min_item: 2, price_offer: 45),
+  "C" => ItemPrice.new(price_unit: 20),
+  "D" => ItemPrice.new(price_unit: 15)
 }
-
-class ItemListException < StandardError; end
 
 class CheckOut
 
@@ -42,18 +35,9 @@ class CheckOut
 
   def scan(item)
 
-    begin
-    rescue ItemListException
-      puts "#{item} is not available"
-    end  
-
-    raise ItemListException unless @items_list.keys.include? item
-    
-    if @items_shopped.keys.include? item
-      @items_shopped[item] += 1
-    else
-      @items_shopped[item] = 1
-    end
+    raise "#{item} is not available" unless @items_list.keys.include? item
+    @items_shopped[item] ||= 0
+    @items_shopped[item] += 1
 
   end
 
