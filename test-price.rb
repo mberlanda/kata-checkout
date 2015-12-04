@@ -18,7 +18,8 @@ class CheckOut
 
   def total
     if @item_hash["A"]
-      @tot += 50 * @item_hash["A"]
+      @tot += 130 * (@item_hash["A"]/3)
+      @tot += 50 * (@item_hash["A"]%3)
     end
     if @item_hash["B"]
       @tot += 30 * @item_hash["B"]
@@ -52,6 +53,7 @@ class TestPrice < Test::Unit::TestCase
     assert_equal(115, price("CDBA"))
 
     assert_equal(100, price("AA"))
+    assert_equal(130, price("AAA"))
 
   end
 
