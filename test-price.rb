@@ -22,7 +22,8 @@ class CheckOut
       @tot += 50 * (@item_hash["A"]%3)
     end
     if @item_hash["B"]
-      @tot += 30 * @item_hash["B"]
+      @tot += 45 * (@item_hash["B"]/2)
+      @tot += 30 * (@item_hash["B"]%2)
     end
     if @item_hash["C"]
       @tot += 20 * @item_hash["C"]
@@ -57,6 +58,11 @@ class TestPrice < Test::Unit::TestCase
     assert_equal(180, price("AAAA"))
     assert_equal(230, price("AAAAA"))
     assert_equal(260, price("AAAAAA"))
+
+    assert_equal(160, price("AAAB"))
+    assert_equal(175, price("AAABB"))
+    assert_equal(190, price("AAABBD"))
+    assert_equal(190, price("DABABA"))
 
   end
 
